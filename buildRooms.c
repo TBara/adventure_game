@@ -98,7 +98,7 @@ void printRooms(struct Room* rooms[]){
   struct stat st = {0};
   char *dir = mydir;
 
-  // CHeck if folder exists and create it
+  // Check if folder exists and create it
   if (stat(dir, &st) == -1) {
       mkdir(dir, 0700);
   }
@@ -121,29 +121,23 @@ void printRooms(struct Room* rooms[]){
       exit(1);
     }
 
-    printf("ROOM NAME: %s\n", rooms[i]->r_name);
     sprintf(temp_str,  "ROOM NAME: %s\n", rooms[i]->r_name);
-    
     nwritten = write(f_descr, temp_str, strlen(temp_str)*sizeof(char));
     memset(readBuffer, '\0', sizeof(readBuffer)); // Clear out the array before using it 
     
     int j;
     for(j = 0; j < rooms[i]->conn_cnt; j++){
       int conn = (j+1);
-      printf("CONNECTION %d: %s\n", conn, rooms[i]->connects[j]->r_name );
-      
       sprintf(temp_str,  "CONNECTION %d: %s\n", conn, rooms[i]->connects[j]->r_name);
       nwritten = write(f_descr, temp_str, strlen(temp_str));
       memset(readBuffer, '\0', sizeof(readBuffer)); // Clear out the array before using it
     }
 
-    printf("ROOM TYPE: %s\n\n", rooms[i]->r_type);
     sprintf(temp_str,  "ROOM TYPE: %s\n", rooms[i]->r_type);
     nwritten = write(f_descr, temp_str, strlen(temp_str));
     memset(readBuffer, '\0', sizeof(readBuffer)); // Clear out the array before using it
     lseek(f_descr, 0, SEEK_SET); // Reset the file pointer to the beginning of the file
   }
-  
 }
 
 void deallocateMem(struct Room* rooms[]){
