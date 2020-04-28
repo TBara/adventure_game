@@ -1,4 +1,5 @@
 # Ignore everything
 *
 !buildRooms.c
+!adventure.c
 !.gitignore
