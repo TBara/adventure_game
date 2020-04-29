@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <pthread.h>
+#include <assert.h>
 
 const char *F_CORE = "barabast.rooms.";
 const int ROOM_COUNT = 7;
@@ -18,13 +19,33 @@ typedef struct Room {
     char *connects[6];
 }Room;
 
+char* ROOM_NAMES[] = {
+    "Opal",
+    "Bismuth",
+    "Quartz",
+    "Fluorite",
+    "Azurite",
+    "Pirite",
+    "Crocoite",
+    "Obsidian",
+    "Emerald",
+    "Agate"
+};
+
 // Compares all directories with OSU user name prefix
 // Gets the newest directory.
 void getLatestDir(char* latestDir);
 void setRooms(struct Room* rooms[], char *latestDir);
 void CompleteRoom(struct Room* room, FILE* fp);
-int CountLinesInFile(FILE * fp);
 void Deallocate(struct Room* rooms[]);
+void Game(struct Room *rooms[]);
+void GameSummary(const int path[], int size);
+void PrintLocation(struct Room* room);
+void GetInput(char* input);
+int GetRoomIdx(char* name);
+int CountLinesInFile(FILE * fp);
+struct Room* FindRoomByType(struct Room* rooms[], char* r_type);
+struct Room* FindRoomByName(struct Room* rooms[], char* r_name);
 
 int main(){
     char latestDir[40];
@@ -34,9 +55,119 @@ int main(){
 
     struct Room* rooms[ROOM_COUNT];
     setRooms(rooms, dirPtr);
+    Game(rooms);
 
     Deallocate(rooms);
     return 0;
+}
+
+void Game(struct Room *rooms[]){
+    
+    struct Room* curr_rm;
+    struct Room* next_rm;
+    int path[4000];
+    memset(path, '\0', 4000);
+    char userInput[256];
+    memset(userInput, '\0', 256);
+
+    char *start_room = "START_ROOM";
+    curr_rm = FindRoomByType(rooms, start_room);
+    assert(curr_rm != 0);
+    
+    int step_cnt = 0;
+    int gameOn = 1;
+    do
+    {
+        PrintLocation(curr_rm);
+        GetInput(userInput);
+        next_rm = FindRoomByName(rooms, userInput);
+        if ((next_rm) && (strcmp(userInput, next_rm->r_name) == 0) && (strcmp(next_rm->r_type, "END_ROOM") != 0))
+        {
+            path[step_cnt] = GetRoomIdx(next_rm->r_name);
+            curr_rm = next_rm;
+            next_rm = 0;
+            step_cnt++;
+        }
+        else if ((next_rm) && (strcmp(userInput, next_rm->r_name) == 0) && (strcmp(next_rm->r_type, "END_ROOM") == 0))
+        {
+            path[step_cnt] = GetRoomIdx(next_rm->r_name);
+            step_cnt++;
+            printf("YOU HAVE FOUND THE END ROOM. CONGRATULATIONS!\n"
+                   "YOU TOOK %d STEPS. YOUR PATH TO VICTORY WAS:\n",
+                   step_cnt);
+            int i;
+            for (i = 0; i < (step_cnt); i++)
+            {
+                printf("%s\n", ROOM_NAMES[path[i]]);
+            }
+            gameOn = 0;
+        }
+        else if (strcmp(userInput, "time") == 0)
+        {
+            printf("Get time\n");
+
+        } else
+        {
+            printf("\nHUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
+
+        }      
+    } while (gameOn == 1);   
+}
+
+
+int GetRoomIdx(char* name){
+    int i;
+    for (i = 0; i < 10; i++)
+    {
+        if (strcmp(ROOM_NAMES[i], name) == 0)
+        {
+            return i;
+        }
+    }
+}
+
+void GetInput(char* userInput){
+    printf("WHERE TO? >");
+    scanf("%s", userInput);
+}
+
+void PrintLocation(struct Room* room){
+    printf("CURRENT LOCATION: %s", room->r_name);
+    printf("\nPOSSIBLE CONNECTIONS:");
+    int i;
+    for(i = 0; i < room->conn_cnt; i++){
+        if (i == (room->conn_cnt - 1))
+        {
+            printf(" %s.\n", room->connects[i]);
+        } else
+        {
+            printf(" %s,", room->connects[i]);
+        }
+    }
+}
+
+struct Room* FindRoomByName(struct Room* rooms[], char* r_name){
+    int i;
+    for (i = 0; i < ROOM_COUNT; i++)
+    {
+        //printf("%s ", rooms[i]->r_type);
+        if( strcmp(rooms[i]->r_name, r_name) == 0){
+            return rooms[i];
+        }
+    }
+    return NULL;
+}
+
+struct Room* FindRoomByType(struct Room* rooms[], char* r_type){
+    int i;
+    for (i = 0; i < ROOM_COUNT; i++)
+    {
+        //printf("%s ", rooms[i]->r_type);
+        if( strcmp(rooms[i]->r_type, r_type) == 0){
+            return rooms[i];
+        }
+    }
+    return NULL;
 }
 
 void setRooms(struct Room* rooms[], char *latestDir){
