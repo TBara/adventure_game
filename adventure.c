@@ -198,8 +198,7 @@ struct Room* FindRoomByType(struct Room* rooms[], char* r_type){
     int i;
     for (i = 0; i < ROOM_COUNT; i++)
     {
-        //printf("%s ", rooms[i]->r_type);
-        if( strcmp(rooms[i]->r_type, r_type) == 0){
+        if(strcmp(rooms[i]->r_type, r_type) != 1){
             return rooms[i];
         }
     }
