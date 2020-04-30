@@ -1,3 +1,11 @@
+/*************************************************************
+ * * Tom Barabasz
+ * * barabast@oregonstate.edu
+ * * 04/29/20
+ * * CS 344 - S2020
+ * * Program 2 - Adventure
+ * ************************************************************/
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
