@@ -207,7 +207,7 @@ bool IsGraphFull(struct Room* rooms[]){
 }
 
 bool IsSameRoom(struct Room* x, struct Room* y){
-  if (x->r_name == y->r_name)
+  if (strcmp(x->r_name, y->r_name) == 0)
   {
     return true;
   }
