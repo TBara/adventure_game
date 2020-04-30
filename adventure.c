@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <pthread.h>
 #include <assert.h>
+#include <pthread.h>
 
 const char *F_CORE = "barabast.rooms.";
 const int ROOM_COUNT = 7;
@@ -42,6 +43,7 @@ void Game(struct Room *rooms[]);
 void GameSummary(const int path[], int size);
 void PrintLocation(struct Room* room);
 void GetInput(char* input);
+void* GetTime();
 int GetRoomIdx(char* name);
 int CountLinesInFile(FILE * fp);
 struct Room* FindRoomByType(struct Room* rooms[], char* r_type);
@@ -104,16 +106,49 @@ void Game(struct Room *rooms[]){
         }
         else if (strcmp(userInput, "time") == 0)
         {
-            printf("Get time\n");
+            pthread_t time_thread;
+            pthread_mutex_t mutex;
+            
+            // Init mutex & lock
+            pthread_mutex_init (&mutex, NULL);
+            pthread_mutex_lock(&mutex);
 
+            //write the time file 
+            int rslt_code = pthread_create(&time_thread, NULL, GetTime, NULL);
+            pthread_join(time_thread, NULL);
+
+            // Unlock and destroy mutex
+            pthread_mutex_unlock(&mutex);
+            pthread_mutex_destroy(&mutex);
         } else
         {
-            printf("\nHUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
+            printf("HUH? I DON’T UNDERSTAND THAT ROOM. TRY AGAIN.\n\n");
 
         }      
     } while (gameOn == 1);   
 }
 
+void* GetTime()
+{
+	char buffer[256];
+    char* time_path = "currentTime.txt";
+	FILE* time_file;
+	time_file = fopen(time_path, "w+");
+	
+    tzset();
+	struct tm *time_struct;
+	time_t curr_time = time(0);
+
+	// Save current time, format, put in buffer
+	time_struct = gmtime(&curr_time);
+	//strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", time_struct);
+    strftime(buffer, sizeof(buffer), "%I:%M%p, %A, %B %d, %Y", time_struct);
+	
+	// Write to file
+	fputs(buffer, time_file);
+	fclose(time_file);
+    return NULL;
+}
 
 int GetRoomIdx(char* name){
     int i;
@@ -129,6 +164,7 @@ int GetRoomIdx(char* name){
 void GetInput(char* userInput){
     printf("WHERE TO? >");
     scanf("%s", userInput);
+    printf("\n");
 }
 
 void PrintLocation(struct Room* room){
